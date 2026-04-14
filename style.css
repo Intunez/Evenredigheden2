@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luister en kies</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-container">
+    <header class="hero">
+      <h1>🎵 Luister en kies</h1>
+      <p class="subtitle">
+        Luister goed en klik het juiste vakje aan.
+        Soms is er <strong>1</strong> juist antwoord, soms <strong>2</strong>.
+      </p>
+    </header>
+
+    <section class="top-bar">
+      <div class="info-card">⭐ Score: <span id="score">0</span></div>
+      <div class="info-card">🎯 Ronde: <span id="round">0</span> / <span id="maxRounds">10</span></div>
+    </section>
+
+    <section class="controls">
+      <button id="playAudioBtn" class="primary">🔊 Speel audio af</button>
+      <button id="checkBtn" class="success">✅ Controleer</button>
+      <button id="clearBtn" class="secondary">🧹 Wis keuze</button>
+      <button id="newRoundBtn" class="secondary">🎲 Nieuwe ronde</button>
+    </section>
+
+    <section class="instruction-box">
+      <p id="answerCountInfo">Deze ronde moet je 1 antwoord kiezen.</p>
+      <p>Gekozen antwoorden: <span id="selectedAnswers">geen</span></p>
+    </section>
+
+    <section class="game-area">
+      <div class="image-wrapper" id="imageWrapper">
+        <img id="gameImage" src="" alt="Spelafbeelding" />
+      </div>
+    </section>
+
+    <section class="feedback-box">
+      <p id="message" class="message"></p>
+    </section>
+
+    <section class="endscreen hidden" id="endScreen">
+      <div class="end-card">
+        <h2>🎉 Klaar!</h2>
+        <p>Je eindscore is <strong><span id="finalScore">0</span></strong> op <strong>10</strong>.</p>
+        <button id="restartBtn" class="primary">🔁 Opnieuw spelen</button>
+      </div>
+    </section>
+
+    <audio id="gameAudio"></audio>
+
+    <audio id="successSound" preload="auto">
+      <source src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAAAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA" type="audio/wav">
+    </audio>
+
+    <audio id="errorSound" preload="auto">
+      <source src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAA////AAAA////AAAA////AAAA////AAAA////AAAA" type="audio/wav">
+    </audio>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
