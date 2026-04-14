@@ -3,8 +3,6 @@ const MAX_ROUNDS = 10;
 const images = [
   { file: "images/afbeelding 1.jpg" },
   { file: "images/afbeelding 2.jpg" },
-  { file: "images/afbeelding 3.jpg" },
-  { file: "images/afbeelding 4.jpg" }
 ];
 
 const audioFiles = [
