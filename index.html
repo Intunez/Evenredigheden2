@@ -9,10 +9,11 @@
 <body>
   <div class="game-container">
     <header class="hero">
-      <h1>🎵 Evenredigheden</h1>
+      <h1>🎵 Luister en kies</h1>
       <p class="subtitle">
-        Eerste term= 1 klap, tweede term= twee klappen, derde term= drie klappen, vierde term= vier klappen. Uiterste termen= noten klinken ver uit elkaar. Middelste termen= noten klinken kort bij elkaar. 
-        Soms is er 1 juist antwoord, soms 2.
+        Luister naar het audiofragment en klik het juiste vak of de juiste vakken aan.
+        Bij meerkeuze kies je ook of het gaat om <strong>uiterste termen</strong>
+        of <strong>middelste termen</strong>.
       </p>
     </header>
 
@@ -29,8 +30,14 @@
     </section>
 
     <section class="instruction-box">
-      <p id="answerCountInfo">Deze ronde moet je 1 antwoord kiezen.</p>
-      <p>Gekozen antwoorden: <span id="selectedAnswers">geen</span></p>
+      <p id="answerCountInfo">Luister goed en kies het juiste antwoord.</p>
+      <p>Gekozen vakken: <span id="selectedAnswers">geen</span></p>
+      <p>Gekozen soort meerkeuze: <span id="selectedCategory">geen</span></p>
+    </section>
+
+    <section class="category-box">
+      <button id="outerBtn" class="category-btn" type="button">Uiterste termen</button>
+      <button id="middleBtn" class="category-btn" type="button">Middelste termen</button>
     </section>
 
     <section class="game-area">
