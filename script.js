@@ -16,6 +16,24 @@ const audioFiles = [
   "audio/b en c.mp3"
 ];
 
+const categoryOptions = [
+  { key: "a", label: "Eerste term" },
+  { key: "b", label: "Tweede term" },
+  { key: "c", label: "Derde term" },
+  { key: "d", label: "Vierde term" },
+  { key: "a,d", label: "Uiterste termen" },
+  { key: "b,c", label: "Middelste termen" }
+];
+
+const categoryLabels = {
+  a: "eerste term",
+  b: "tweede term",
+  c: "derde term",
+  d: "vierde term",
+  "a,d": "uiterste termen",
+  "b,c": "middelste termen"
+};
+
 const gameImage = document.getElementById("gameImage");
 const imageWrapper = document.getElementById("imageWrapper");
 const gameAudio = document.getElementById("gameAudio");
@@ -25,6 +43,8 @@ const checkBtn = document.getElementById("checkBtn");
 const clearBtn = document.getElementById("clearBtn");
 const newRoundBtn = document.getElementById("newRoundBtn");
 const restartBtn = document.getElementById("restartBtn");
+
+const termGrid = document.getElementById("termGrid");
 
 const messageEl = document.getElementById("message");
 const selectedAnswersEl = document.getElementById("selectedAnswers");
@@ -39,24 +59,6 @@ const finalScoreEl = document.getElementById("finalScore");
 const successSound = document.getElementById("successSound");
 const errorSound = document.getElementById("errorSound");
 
-const categoryButtons = {
-  a: document.getElementById("term1Btn"),
-  b: document.getElementById("term2Btn"),
-  c: document.getElementById("term3Btn"),
-  d: document.getElementById("term4Btn"),
-  "a,d": document.getElementById("outerBtn"),
-  "b,c": document.getElementById("middleBtn")
-};
-
-const categoryLabels = {
-  a: "eerste term",
-  b: "tweede term",
-  c: "derde term",
-  d: "vierde term",
-  "a,d": "uiterste termen",
-  "b,c": "middelste termen"
-};
-
 let currentImage = null;
 let currentAudio = null;
 let correctAnswers = [];
@@ -67,7 +69,20 @@ let score = 0;
 let round = 0;
 let roundLocked = false;
 
+/* nieuw: audio-volgorde per spel */
+let shuffledAudioQueue = [];
+let currentAudioIndex = 0;
+
 maxRoundsEl.textContent = MAX_ROUNDS;
+
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 function getRandomItem(array) {
   return array[Math.floor(Math.random() * array.length)];
@@ -121,7 +136,6 @@ function updateSelectedCategoryText() {
 function setMessage(text, type = "") {
   messageEl.textContent = text;
   messageEl.className = "message";
-
   if (type) {
     messageEl.classList.add(type);
   }
@@ -154,6 +168,31 @@ function createHotspots() {
   });
 }
 
+function renderCategoryButtons() {
+  termGrid.innerHTML = "";
+
+  categoryOptions.forEach(option => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "category-btn";
+    button.dataset.key = option.key;
+    button.textContent = option.label;
+
+    if (selectedCategory === option.key) {
+      button.classList.add("active");
+    }
+
+    button.addEventListener("click", () => selectCategory(option.key));
+    termGrid.appendChild(button);
+  });
+}
+
+function refreshCategoryButtonState() {
+  termGrid.querySelectorAll(".category-btn").forEach(button => {
+    button.classList.toggle("active", button.dataset.key === selectedCategory);
+  });
+}
+
 function toggleAnswer(label, hotspotEl) {
   if (roundLocked) return;
 
@@ -178,24 +217,16 @@ function resetVisualState() {
 
 function clearCategorySelection() {
   selectedCategory = null;
-
-  Object.values(categoryButtons).forEach(btn => {
-    btn.classList.remove("active");
-  });
-
   updateSelectedCategoryText();
+  refreshCategoryButtonState();
 }
 
 function selectCategory(category) {
   if (roundLocked) return;
 
   selectedCategory = category;
-
-  Object.entries(categoryButtons).forEach(([key, btn]) => {
-    btn.classList.toggle("active", key === category);
-  });
-
   updateSelectedCategoryText();
+  refreshCategoryButtonState();
   setMessage("");
 }
 
@@ -226,13 +257,7 @@ function markAnswers(isCorrect, isCategoryCorrect) {
     }
   });
 
-  Object.values(categoryButtons).forEach(btn => {
-    btn.classList.remove("active");
-  });
-
-  if (selectedCategory && categoryButtons[selectedCategory]) {
-    categoryButtons[selectedCategory].classList.add("active");
-  }
+  refreshCategoryButtonState();
 
   const neededText = categoryLabels[requiredCategory] || "juiste knop";
 
@@ -275,6 +300,24 @@ function updateInstructionText() {
   answerCountInfoEl.textContent = "Luister goed en kies het juiste antwoord.";
 }
 
+/* nieuw: maak een nieuwe audio-volgorde voor elk spel */
+function buildNewAudioQueue() {
+  shuffledAudioQueue = shuffleArray(audioFiles);
+  currentAudioIndex = 0;
+}
+
+/* nieuw: neem volgende audio uit de geschudde reeks */
+function getNextAudio() {
+  if (currentAudioIndex >= shuffledAudioQueue.length) {
+    shuffledAudioQueue = shuffleArray(audioFiles);
+    currentAudioIndex = 0;
+  }
+
+  const nextAudio = shuffledAudioQueue[currentAudioIndex];
+  currentAudioIndex += 1;
+  return nextAudio;
+}
+
 function lockRound() {
   roundLocked = true;
 }
@@ -298,14 +341,18 @@ function startNewRound() {
   selectedAnswers = new Set();
   correctAnswers = [];
   requiredCategory = null;
+  selectedCategory = null;
 
   updateSelectedAnswersText();
-  clearCategorySelection();
+  updateSelectedCategoryText();
   resetVisualState();
   setMessage("");
 
   currentImage = getRandomItem(images);
-  currentAudio = getRandomItem(audioFiles);
+
+  /* aangepast: niet meer random per beurt, maar uit de geschudde audio-volgorde */
+  currentAudio = getNextAudio();
+
   correctAnswers = extractAnswersFromAudioPath(currentAudio);
   requiredCategory = getRequiredCategory(correctAnswers);
 
@@ -313,6 +360,7 @@ function startNewRound() {
   gameAudio.src = currentAudio;
 
   createHotspots();
+  renderCategoryButtons();
   updateInstructionText();
 
   round += 1;
@@ -328,7 +376,7 @@ function checkAnswer() {
   }
 
   if (!selectedCategory) {
-    setMessage("Kies ook de juiste knop.", "error");
+    setMessage("Kies ook de juiste termknop.", "error");
     return;
   }
 
@@ -371,6 +419,9 @@ function restartGame() {
   requiredCategory = null;
   roundLocked = false;
 
+  /* nieuw: bij opnieuw spelen een nieuwe audio-volgorde maken */
+  buildNewAudioQueue();
+
   scoreEl.textContent = "0";
   roundEl.textContent = "0";
   finalScoreEl.textContent = "0";
@@ -384,9 +435,5 @@ checkBtn.addEventListener("click", checkAnswer);
 clearBtn.addEventListener("click", clearSelection);
 newRoundBtn.addEventListener("click", startNewRound);
 restartBtn.addEventListener("click", restartGame);
-
-Object.keys(categoryButtons).forEach(key => {
-  categoryButtons[key].addEventListener("click", () => selectCategory(key));
-});
 
 restartGame();
