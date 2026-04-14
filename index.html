@@ -7,58 +7,68 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="game-container">
-    <header class="hero">
-      <h1>🎵 Evenredigheden</h1>
-      <p class="subtitle">
-        Luister naar het audiofragment en maak de juiste keuze tussen a, b, c of d. Kies nadien ook de juiste benaming:
+  <div class="game-shell">
+    <header class="top-header">
+      <div class="title-block">
+        <h1>🎵 Benamingen Evenredigheden</h1>
+        <p>
+          Luister naar het audiofragment en maak de juiste keuze tussen a, b, c of d. Kies nadien ook de juiste benaming:
         eerste term, tweede term, derde term, vierde term, uiterste termen of middelste termen. 
-        In het geval van de twee laatsten, moet je ook meerdere antwoorden kiezen bij de gekleurde vakken. 
-      </p>
+        In het geval van de twee laatsten, moet je ook meerdere antwoorden kiezen bij de gekleurde vakken.
+
+        </p>
+      </div>
+
+      <div class="score-bar">
+        <div class="score-card">⭐ Score: <span id="score">0</span></div>
+        <div class="score-card">🎯 Ronde: <span id="round">0</span> / <span id="maxRounds">10</span></div>
+      </div>
     </header>
 
-    <section class="top-bar">
-      <div class="info-card">⭐ Score: <span id="score">0</span></div>
-      <div class="info-card">🎯 Ronde: <span id="round">0</span> / <span id="maxRounds">10</span></div>
-    </section>
+    <main class="game-layout">
+      <section class="panel image-panel">
+        <h2 class="panel-title">Kies de juiste vakken</h2>
 
-    <section class="controls">
-      <button id="playAudioBtn" class="primary" type="button">🔊 Speel audio af</button>
-      <button id="checkBtn" class="success" type="button">✅ Controleer</button>
-      <button id="clearBtn" class="secondary" type="button">🧹 Wis keuze</button>
-      <button id="newRoundBtn" class="secondary" type="button">🎲 Nieuwe ronde</button>
-    </section>
+        <div class="image-wrapper" id="imageWrapper">
+          <img id="gameImage" src="" alt="Spelafbeelding" />
+        </div>
 
-    <section class="instruction-box">
-      <p id="answerCountInfo">Luister goed en kies het juiste antwoord.</p>
-      <p>Gekozen vakken: <span id="selectedAnswers">geen</span></p>
-      <p>Gekozen knop: <span id="selectedCategory">geen</span></p>
-    </section>
+        <div class="small-info">
+          <p>Gekozen vakken: <span id="selectedAnswers">geen</span></p>
+        </div>
+      </section>
 
-    <section class="category-box">
-      <button id="term1Btn" class="category-btn" type="button">Eerste term</button>
-      <button id="term2Btn" class="category-btn" type="button">Tweede term</button>
-      <button id="term3Btn" class="category-btn" type="button">Derde term</button>
-      <button id="term4Btn" class="category-btn" type="button">Vierde term</button>
-      <button id="outerBtn" class="category-btn" type="button">Uiterste termen</button>
-      <button id="middleBtn" class="category-btn" type="button">Middelste termen</button>
-    </section>
+      <section class="panel control-panel">
+        <h2 class="panel-title">Luister en kies de juiste term</h2>
 
-    <section class="game-area">
-      <div class="image-wrapper" id="imageWrapper">
-        <img id="gameImage" src="" alt="Spelafbeelding" />
-      </div>
-    </section>
+        <button id="playAudioBtn" class="play-audio-btn" type="button">
+          🔊 Speel audio af
+        </button>
 
-    <section class="feedback-box">
-      <p id="message" class="message"></p>
-    </section>
+        <div class="button-row">
+          <button id="checkBtn" class="action-btn success" type="button">✅ Controleer</button>
+          <button id="clearBtn" class="action-btn secondary" type="button">🧹 Wis keuze</button>
+          <button id="newRoundBtn" class="action-btn secondary" type="button">🎲 Nieuwe ronde</button>
+        </div>
+
+        <div class="instruction-box">
+          <p id="answerCountInfo">Luister goed en kies het juiste antwoord.</p>
+          <p>Gekozen termknop: <span id="selectedCategory">geen</span></p>
+        </div>
+
+        <div class="term-grid" id="termGrid"></div>
+
+        <div class="feedback-box">
+          <p id="message" class="message"></p>
+        </div>
+      </section>
+    </main>
 
     <section class="endscreen hidden" id="endScreen">
       <div class="end-card">
         <h2>🎉 Klaar!</h2>
         <p>Je eindscore is <strong><span id="finalScore">0</span></strong> op <strong>10</strong>.</p>
-        <button id="restartBtn" class="primary" type="button">🔁 Opnieuw spelen</button>
+        <button id="restartBtn" class="play-again-btn" type="button">🔁 Opnieuw spelen</button>
       </div>
     </section>
 
