@@ -9,11 +9,11 @@
 <body>
   <div class="game-container">
     <header class="hero">
-      <h1>🎵 Luister en kies</h1>
+      <h1>🎵 Evenredigheden</h1>
       <p class="subtitle">
-        Luister naar het audiofragment en klik het juiste vak of de juiste vakken aan.
-        Bij meerkeuze kies je ook of het gaat om <strong>uiterste termen</strong>
-        of <strong>middelste termen</strong>.
+        Luister naar het audiofragment en maak de juiste keuze tussen a, b, c of d. Kies nadien ook de juiste benaming:
+        eerste term, tweede term, derde term, vierde term, uiterste termen of middelste termen. 
+        In het geval van de twee laatsten, moet je ook meerdere antwoorden kiezen bij de gekleurde vakken. 
       </p>
     </header>
 
@@ -32,10 +32,14 @@
     <section class="instruction-box">
       <p id="answerCountInfo">Luister goed en kies het juiste antwoord.</p>
       <p>Gekozen vakken: <span id="selectedAnswers">geen</span></p>
-      <p>Gekozen soort meerkeuze: <span id="selectedCategory">geen</span></p>
+      <p>Gekozen knop: <span id="selectedCategory">geen</span></p>
     </section>
 
     <section class="category-box">
+      <button id="term1Btn" class="category-btn" type="button">Eerste term</button>
+      <button id="term2Btn" class="category-btn" type="button">Tweede term</button>
+      <button id="term3Btn" class="category-btn" type="button">Derde term</button>
+      <button id="term4Btn" class="category-btn" type="button">Vierde term</button>
       <button id="outerBtn" class="category-btn" type="button">Uiterste termen</button>
       <button id="middleBtn" class="category-btn" type="button">Middelste termen</button>
     </section>
