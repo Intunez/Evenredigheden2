@@ -68,8 +68,8 @@ let requiredCategory = null;
 let score = 0;
 let round = 0;
 let roundLocked = false;
+let alreadyWrong = false;
 
-/* nieuw: audio-volgorde per spel */
 let shuffledAudioQueue = [];
 let currentAudioIndex = 0;
 
@@ -240,45 +240,19 @@ function clearSelection() {
   setMessage("");
 }
 
-function markAnswers(isCorrect, isCategoryCorrect) {
+function showCorrectState() {
   imageWrapper.querySelectorAll(".hotspot").forEach(h => {
     const label = h.dataset.label;
-    const isSelected = selectedAnswers.has(label);
     const isActuallyCorrect = correctAnswers.includes(label);
 
-    h.classList.remove("selected");
+    h.classList.remove("selected", "wrong");
 
     if (isActuallyCorrect) {
       h.classList.add("correct");
     }
-
-    if (isSelected && !isActuallyCorrect) {
-      h.classList.add("wrong");
-    }
   });
 
   refreshCategoryButtonState();
-
-  const neededText = categoryLabels[requiredCategory] || "juiste knop";
-
-  if (isCorrect && isCategoryCorrect) {
-    setMessage("Goed gedaan! Volgende ronde...", "success");
-    return;
-  }
-
-  if (!isCorrect && !isCategoryCorrect) {
-    setMessage(`Niet juist. Correct antwoord: ${correctAnswers.join(" en ")} + ${neededText}`, "error");
-    return;
-  }
-
-  if (!isCorrect) {
-    setMessage(`Niet juist. Correct antwoord: ${correctAnswers.join(" en ")}`, "error");
-    return;
-  }
-
-  if (!isCategoryCorrect) {
-    setMessage(`De vakken zijn goed, maar kies ook: ${neededText}.`, "error");
-  }
 }
 
 function playSound(audioElement) {
@@ -300,13 +274,11 @@ function updateInstructionText() {
   answerCountInfoEl.textContent = "Luister goed en kies het juiste antwoord.";
 }
 
-/* nieuw: maak een nieuwe audio-volgorde voor elk spel */
 function buildNewAudioQueue() {
   shuffledAudioQueue = shuffleArray(audioFiles);
   currentAudioIndex = 0;
 }
 
-/* nieuw: neem volgende audio uit de geschudde reeks */
 function getNextAudio() {
   if (currentAudioIndex >= shuffledAudioQueue.length) {
     shuffledAudioQueue = shuffleArray(audioFiles);
@@ -342,6 +314,7 @@ function startNewRound() {
   correctAnswers = [];
   requiredCategory = null;
   selectedCategory = null;
+  alreadyWrong = false;
 
   updateSelectedAnswersText();
   updateSelectedCategoryText();
@@ -349,8 +322,6 @@ function startNewRound() {
   setMessage("");
 
   currentImage = getRandomItem(images);
-
-  /* aangepast: niet meer random per beurt, maar uit de geschudde audio-volgorde */
   currentAudio = getNextAudio();
 
   correctAnswers = extractAnswersFromAudioPath(currentAudio);
@@ -384,13 +355,17 @@ function checkAnswer() {
   const isCorrect = arraysEqualAsSets(userAnswers, correctAnswers);
   const isCategoryCorrect = selectedCategory === requiredCategory;
 
-  lockRound();
-  markAnswers(isCorrect, isCategoryCorrect);
-
   if (isCorrect && isCategoryCorrect) {
-    score += 1;
-    scoreEl.textContent = score;
+    lockRound();
+
+    if (!alreadyWrong) {
+      score += 1;
+      scoreEl.textContent = score;
+    }
+
+    showCorrectState();
     playSound(successSound);
+    setMessage("Goed! Volgende ronde...", "success");
 
     setTimeout(() => {
       if (round >= MAX_ROUNDS) {
@@ -398,14 +373,14 @@ function checkAnswer() {
       } else {
         startNewRound();
       }
-    }, 1400);
-  } else {
-    playSound(errorSound);
+    }, 1200);
 
-    setTimeout(() => {
-      unlockRound();
-    }, 700);
+    return;
   }
+
+  alreadyWrong = true;
+  playSound(errorSound);
+  setMessage("Niet juist, probeer opnieuw!", "error");
 }
 
 function restartGame() {
@@ -418,8 +393,8 @@ function restartGame() {
   selectedCategory = null;
   requiredCategory = null;
   roundLocked = false;
+  alreadyWrong = false;
 
-  /* nieuw: bij opnieuw spelen een nieuwe audio-volgorde maken */
   buildNewAudioQueue();
 
   scoreEl.textContent = "0";
