@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Evenredigheden Benamingen</title>
+  <title>Luister en kies</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="game-shell">
     <header class="top-header">
       <div class="title-block">
-        <h1>🎵 Luister en kies</h1>
+        <h1>🎵 Evenredigheden Benamingen </h1>
         <p>
           Luister naar het audiofragment en maak de juiste keuze tussen a, b, c of d. Kies nadien ook de juiste benaming.
         Eerste term= één klap. Tweede term= twee klappen. Derde term= drie klappen. Vierde term= vier klappen. 
           Uiterste termen= noten klinken ver uit elkaar. Middelste termen= noten liggen kort op elkaar.  
         In het geval van de twee laatsten, moet je ook meerdere antwoorden kiezen bij de gekleurde vakken.
-
         </p>
       </div>
 
@@ -73,14 +72,8 @@
     </section>
 
     <audio id="gameAudio"></audio>
-
-    <audio id="successSound" preload="auto">
-      <source src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAAAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA" type="audio/wav">
-    </audio>
-
-    <audio id="errorSound" preload="auto">
-      <source src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAA////AAAA////AAAA////AAAA////AAAA////AAAA" type="audio/wav">
-    </audio>
+    <audio id="successSound" src="audio/juist.mp3" preload="auto"></audio>
+    <audio id="errorSound" src="audio/fout.mp3" preload="auto"></audio>
   </div>
 
   <script src="script.js"></script>
