@@ -41,7 +41,6 @@ const gameAudio = document.getElementById("gameAudio");
 const playAudioBtn = document.getElementById("playAudioBtn");
 const checkBtn = document.getElementById("checkBtn");
 const clearBtn = document.getElementById("clearBtn");
-const newRoundBtn = document.getElementById("newRoundBtn");
 const restartBtn = document.getElementById("restartBtn");
 
 const termGrid = document.getElementById("termGrid");
@@ -408,7 +407,6 @@ function restartGame() {
 playAudioBtn.addEventListener("click", playCurrentAudio);
 checkBtn.addEventListener("click", checkAnswer);
 clearBtn.addEventListener("click", clearSelection);
-newRoundBtn.addEventListener("click", startNewRound);
 restartBtn.addEventListener("click", restartGame);
 
 restartGame();
