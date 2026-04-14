@@ -1,42 +1,10 @@
 const MAX_ROUNDS = 10;
 
 const images = [
-  {
-    file: "images/afbeelding 1.jpg",
-    zones: {
-      a: { left: 3, top: 1, width: 45, height: 48 },
-      c: { left: 50, top: 1, width: 45, height: 48 },
-      b: { left: 3, top: 51, width: 45, height: 47 },
-      d: { left: 50, top: 51, width: 45, height: 47 }
-    }
-  },
-  {
-    file: "images/afbeelding 2.jpg",
-    zones: {
-      a: { left: 2, top: 2, width: 46, height: 45 },
-      c: { left: 51, top: 2, width: 46, height: 45 },
-      b: { left: 2, top: 50, width: 46, height: 45 },
-      d: { left: 51, top: 50, width: 46, height: 45 }
-    }
-  },
-  {
-    file: "images/afbeelding 3.jpg",
-    zones: {
-      a: { left: 2, top: 2, width: 46, height: 45 },
-      c: { left: 51, top: 2, width: 46, height: 45 },
-      b: { left: 2, top: 50, width: 46, height: 45 },
-      d: { left: 51, top: 50, width: 46, height: 45 }
-    }
-  },
-  {
-    file: "images/afbeelding 4.jpg",
-    zones: {
-      a: { left: 2, top: 2, width: 46, height: 45 },
-      c: { left: 51, top: 2, width: 46, height: 45 },
-      b: { left: 2, top: 50, width: 46, height: 45 },
-      d: { left: 51, top: 50, width: 46, height: 45 }
-    }
-  }
+  { file: "images/afbeelding 1.jpg" },
+  { file: "images/afbeelding 2.jpg" },
+  { file: "images/afbeelding 3.jpg" },
+  { file: "images/afbeelding 4.jpg" }
 ];
 
 const audioFiles = [
@@ -95,8 +63,7 @@ function arraysEqualAsSets(arr1, arr2) {
 }
 
 function clearHotspots() {
-  const existingHotspots = imageWrapper.querySelectorAll(".hotspot");
-  existingHotspots.forEach(h => h.remove());
+  imageWrapper.querySelectorAll(".hotspot").forEach(el => el.remove());
 }
 
 function updateSelectedAnswersText() {
@@ -104,6 +71,7 @@ function updateSelectedAnswersText() {
     selectedAnswersEl.textContent = "geen";
     return;
   }
+
   selectedAnswersEl.textContent = [...selectedAnswers].sort().join(" en ");
 }
 
@@ -118,19 +86,26 @@ function setMessage(text, type = "") {
 function createHotspots() {
   clearHotspots();
 
-  Object.entries(currentImage.zones).forEach(([label, zone]) => {
+  const zones = [
+    { label: "a", left: 10, top: 10, width: 33, height: 36 },
+    { label: "c", left: 57, top: 10, width: 33, height: 36 },
+    { label: "b", left: 10, top: 54, width: 33, height: 34 },
+    { label: "d", left: 57, top: 54, width: 33, height: 34 }
+  ];
+
+  zones.forEach(zone => {
     const hotspot = document.createElement("button");
-    hotspot.className = "hotspot";
-    hotspot.dataset.label = label;
     hotspot.type = "button";
-    hotspot.setAttribute("aria-label", `Kies ${label}`);
+    hotspot.className = "hotspot";
+    hotspot.dataset.label = zone.label;
+    hotspot.setAttribute("aria-label", `Kies ${zone.label}`);
 
     hotspot.style.left = `${zone.left}%`;
     hotspot.style.top = `${zone.top}%`;
     hotspot.style.width = `${zone.width}%`;
     hotspot.style.height = `${zone.height}%`;
 
-    hotspot.addEventListener("click", () => toggleAnswer(label, hotspot));
+    hotspot.addEventListener("click", () => toggleAnswer(zone.label, hotspot));
     imageWrapper.appendChild(hotspot);
   });
 }
@@ -152,14 +127,14 @@ function toggleAnswer(label, hotspotEl) {
 }
 
 function resetVisualState() {
-  const hotspots = imageWrapper.querySelectorAll(".hotspot");
-  hotspots.forEach(h => {
+  imageWrapper.querySelectorAll(".hotspot").forEach(h => {
     h.classList.remove("selected", "correct", "wrong");
   });
 }
 
 function clearSelection() {
   if (roundLocked) return;
+
   selectedAnswers = new Set();
   resetVisualState();
   updateSelectedAnswersText();
@@ -167,9 +142,7 @@ function clearSelection() {
 }
 
 function markAnswers(isCorrect) {
-  const hotspots = imageWrapper.querySelectorAll(".hotspot");
-
-  hotspots.forEach(h => {
+  imageWrapper.querySelectorAll(".hotspot").forEach(h => {
     const label = h.dataset.label;
     const isSelected = selectedAnswers.has(label);
     const isActuallyCorrect = correctAnswers.includes(label);
@@ -200,6 +173,7 @@ function playSound(audioElement) {
 
 function playCurrentAudio() {
   if (!currentAudio) return;
+
   gameAudio.currentTime = 0;
   gameAudio.play().catch(() => {
     setMessage("Het audiofragment kon niet starten. Klik nog eens op de knop.", "error");
@@ -302,9 +276,9 @@ function restartGame() {
   currentAudio = null;
   roundLocked = false;
 
-  scoreEl.textContent = score;
-  roundEl.textContent = round;
-  finalScoreEl.textContent = score;
+  scoreEl.textContent = "0";
+  roundEl.textContent = "0";
+  finalScoreEl.textContent = "0";
   endScreen.classList.add("hidden");
 
   startNewRound();
