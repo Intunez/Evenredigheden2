@@ -2,7 +2,7 @@ const MAX_ROUNDS = 10;
 
 const images = [
   { file: "images/afbeelding 1.jpg" },
-  { file: "images/afbeelding 2.jpg" },
+  { file: "images/afbeelding 2.jpg" }
 ];
 
 const audioFiles = [
@@ -330,6 +330,7 @@ function startNewRound() {
   createHotspots();
   renderCategoryButtons();
   updateInstructionText();
+  gameAudio.load();
 
   round += 1;
   roundEl.textContent = round;
