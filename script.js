@@ -26,9 +26,6 @@ const clearBtn = document.getElementById("clearBtn");
 const newRoundBtn = document.getElementById("newRoundBtn");
 const restartBtn = document.getElementById("restartBtn");
 
-const outerBtn = document.getElementById("outerBtn");
-const middleBtn = document.getElementById("middleBtn");
-
 const messageEl = document.getElementById("message");
 const selectedAnswersEl = document.getElementById("selectedAnswers");
 const selectedCategoryEl = document.getElementById("selectedCategory");
@@ -41,6 +38,24 @@ const finalScoreEl = document.getElementById("finalScore");
 
 const successSound = document.getElementById("successSound");
 const errorSound = document.getElementById("errorSound");
+
+const categoryButtons = {
+  a: document.getElementById("term1Btn"),
+  b: document.getElementById("term2Btn"),
+  c: document.getElementById("term3Btn"),
+  d: document.getElementById("term4Btn"),
+  "a,d": document.getElementById("outerBtn"),
+  "b,c": document.getElementById("middleBtn")
+};
+
+const categoryLabels = {
+  a: "eerste term",
+  b: "tweede term",
+  c: "derde term",
+  d: "vierde term",
+  "a,d": "uiterste termen",
+  "b,c": "middelste termen"
+};
 
 let currentImage = null;
 let currentAudio = null;
@@ -66,13 +81,12 @@ function extractAnswersFromAudioPath(path) {
 function getRequiredCategory(answers) {
   const joined = [...answers].sort().join(",");
 
-  if (joined === "a,d") {
-    return "uiterste";
-  }
-
-  if (joined === "b,c") {
-    return "middelste";
-  }
+  if (joined === "a") return "a";
+  if (joined === "b") return "b";
+  if (joined === "c") return "c";
+  if (joined === "d") return "d";
+  if (joined === "a,d") return "a,d";
+  if (joined === "b,c") return "b,c";
 
   return null;
 }
@@ -101,14 +115,7 @@ function updateSelectedCategoryText() {
     return;
   }
 
-  if (selectedCategory === "uiterste") {
-    selectedCategoryEl.textContent = "uiterste termen";
-    return;
-  }
-
-  if (selectedCategory === "middelste") {
-    selectedCategoryEl.textContent = "middelste termen";
-  }
+  selectedCategoryEl.textContent = categoryLabels[selectedCategory] || "geen";
 }
 
 function setMessage(text, type = "") {
@@ -171,8 +178,11 @@ function resetVisualState() {
 
 function clearCategorySelection() {
   selectedCategory = null;
-  outerBtn.classList.remove("active");
-  middleBtn.classList.remove("active");
+
+  Object.values(categoryButtons).forEach(btn => {
+    btn.classList.remove("active");
+  });
+
   updateSelectedCategoryText();
 }
 
@@ -181,8 +191,9 @@ function selectCategory(category) {
 
   selectedCategory = category;
 
-  outerBtn.classList.toggle("active", category === "uiterste");
-  middleBtn.classList.toggle("active", category === "middelste");
+  Object.entries(categoryButtons).forEach(([key, btn]) => {
+    btn.classList.toggle("active", key === category);
+  });
 
   updateSelectedCategoryText();
   setMessage("");
@@ -215,25 +226,23 @@ function markAnswers(isCorrect, isCategoryCorrect) {
     }
   });
 
-  outerBtn.classList.remove("active");
-  middleBtn.classList.remove("active");
+  Object.values(categoryButtons).forEach(btn => {
+    btn.classList.remove("active");
+  });
 
-  if (requiredCategory && selectedCategory === requiredCategory) {
-    if (requiredCategory === "uiterste") {
-      outerBtn.classList.add("active");
-    } else {
-      middleBtn.classList.add("active");
-    }
+  if (selectedCategory && categoryButtons[selectedCategory]) {
+    categoryButtons[selectedCategory].classList.add("active");
   }
+
+  const neededText = categoryLabels[requiredCategory] || "juiste knop";
 
   if (isCorrect && isCategoryCorrect) {
     setMessage("Goed gedaan! Volgende ronde...", "success");
     return;
   }
 
-  if (!isCorrect && requiredCategory) {
-    const categoryText = requiredCategory === "uiterste" ? "uiterste termen" : "middelste termen";
-    setMessage(`Niet juist. Correct antwoord: ${correctAnswers.join(" en ")} + ${categoryText}`, "error");
+  if (!isCorrect && !isCategoryCorrect) {
+    setMessage(`Niet juist. Correct antwoord: ${correctAnswers.join(" en ")} + ${neededText}`, "error");
     return;
   }
 
@@ -242,9 +251,8 @@ function markAnswers(isCorrect, isCategoryCorrect) {
     return;
   }
 
-  if (!isCategoryCorrect && requiredCategory) {
-    const categoryText = requiredCategory === "uiterste" ? "uiterste termen" : "middelste termen";
-    setMessage(`De vakken zijn goed, maar kies ook: ${categoryText}.`, "error");
+  if (!isCategoryCorrect) {
+    setMessage(`De vakken zijn goed, maar kies ook: ${neededText}.`, "error");
   }
 }
 
@@ -319,14 +327,14 @@ function checkAnswer() {
     return;
   }
 
+  if (!selectedCategory) {
+    setMessage("Kies ook de juiste knop.", "error");
+    return;
+  }
+
   const userAnswers = [...selectedAnswers].sort();
   const isCorrect = arraysEqualAsSets(userAnswers, correctAnswers);
-
-  let isCategoryCorrect = true;
-
-  if (requiredCategory) {
-    isCategoryCorrect = selectedCategory === requiredCategory;
-  }
+  const isCategoryCorrect = selectedCategory === requiredCategory;
 
   lockRound();
   markAnswers(isCorrect, isCategoryCorrect);
@@ -377,7 +385,8 @@ clearBtn.addEventListener("click", clearSelection);
 newRoundBtn.addEventListener("click", startNewRound);
 restartBtn.addEventListener("click", restartGame);
 
-outerBtn.addEventListener("click", () => selectCategory("uiterste"));
-middleBtn.addEventListener("click", () => selectCategory("middelste"));
+Object.keys(categoryButtons).forEach(key => {
+  categoryButtons[key].addEventListener("click", () => selectCategory(key));
+});
 
 restartGame();
