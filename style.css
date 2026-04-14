@@ -120,10 +120,9 @@ button:disabled {
 }
 
 .category-box {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
   gap: 10px;
-  flex-wrap: wrap;
   margin: 0 auto 12px;
   max-width: 720px;
 }
@@ -131,8 +130,8 @@ button:disabled {
 .category-btn {
   background: #ffffff;
   color: #1f2937;
-  min-width: 190px;
   border: 3px solid transparent;
+  min-height: 48px;
 }
 
 .category-btn.active {
@@ -282,9 +281,13 @@ button:disabled {
     padding: 12px 10px 20px;
   }
 
-  .controls button,
-  .category-btn {
+  .controls button {
     width: 100%;
+    max-width: 320px;
+  }
+
+  .category-box {
+    grid-template-columns: 1fr;
     max-width: 320px;
   }
 
