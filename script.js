@@ -1,411 +1,90 @@
-const MAX_ROUNDS = 10;
-
-const images = [
-  { file: "images/afbeelding 1.jpg" },
-  { file: "images/afbeelding 2.jpg" }
+const LEVEL1_ROUNDS = 10;
+const level3Exercises = [
+  { question: "10/5 = 2 / …", answers: ["1"] },
+  { question: "… / 12 = 3/4", answers: ["9"] },
+  { question: "-4/6 = 12/… = -8/…", answers: ["-18", "12"] },
+  { question: "-18/-25 = … / 125", answers: ["90"] },
+  { question: "-16/… = 48/-63 = … / 42", answers: ["21", "-32"] },
+  { question: "2/3 = -16/…", answers: ["-24"] },
+  { question: "x/3 = 3/9", answers: ["1"] },
+  { question: "4/x = 6/12", answers: ["8"] },
+  { question: "x/5 = 6/15", answers: ["2"] },
+  { question: "2/3 = x/4", answers: ["8/3"] },
+  { question: "-x/4 = -9/10", answers: ["3,6"] },
+  { question: "-4/5 = -2/x", answers: ["5/2"] },
+  { question: "x/-7 = 5/11", answers: ["-35/11"] },
+  { question: "13/x = -36/-9", answers: ["13/4"] },
+  { question: "2x/5 = 12/3", answers: ["10"] },
+  { question: "5/10 = -x/-2", answers: ["1"] },
+  { question: "14/23 = 2/3x", answers: ["23/21"] },
+  { question: "-3/10x = 2", answers: ["-3/20"] }
 ];
 
-const audioFiles = [
-  "audio/a.mp3",
-  "audio/b.mp3",
-  "audio/c.mp3",
-  "audio/d.mp3",
-  "audio/a en d.mp3",
-  "audio/b en c.mp3"
-];
-
+const images = [{ file: "images/afbeelding 1.jpg" }, { file: "images/afbeelding 2.jpg" }];
+const audioFiles = ["audio/a.mp3", "audio/b.mp3", "audio/c.mp3", "audio/d.mp3", "audio/a en d.mp3", "audio/b en c.mp3"];
 const categoryOptions = [
-  { key: "a", label: "Eerste term" },
-  { key: "b", label: "Tweede term" },
-  { key: "c", label: "Derde term" },
-  { key: "d", label: "Vierde term" },
-  { key: "a,d", label: "Uiterste termen" },
-  { key: "b,c", label: "Middelste termen" }
+  { key: "a", label: "Eerste term" }, { key: "b", label: "Tweede term" },
+  { key: "c", label: "Derde term" }, { key: "d", label: "Vierde term" },
+  { key: "a,d", label: "Uiterste termen" }, { key: "b,c", label: "Middelste termen" }
 ];
+const categoryLabels = { a: "eerste term", b: "tweede term", c: "derde term", d: "vierde term", "a,d": "uiterste termen", "b,c": "middelste termen" };
 
-const categoryLabels = {
-  a: "eerste term",
-  b: "tweede term",
-  c: "derde term",
-  d: "vierde term",
-  "a,d": "uiterste termen",
-  "b,c": "middelste termen"
-};
+const $ = id => document.getElementById(id);
+const startScreen = $("startScreen"), gameScreen = $("gameScreen"), endScreen = $("endScreen");
+const levelTitle = $("levelTitle"), levelIntro = $("levelIntro"), levelNumber = $("levelNumber");
+const gameImage = $("gameImage"), imageWrapper = $("imageWrapper"), gameAudio = $("gameAudio");
+const termGrid = $("termGrid"), messageEl = $("message"), selectedAnswersEl = $("selectedAnswers"), selectedCategoryEl = $("selectedCategory");
+const scoreEl = $("score"), roundEl = $("round"), maxRoundsEl = $("maxRounds"), finalScoreEl = $("finalScore");
+const successSound = $("successSound"), errorSound = $("errorSound");
+let level = 1, score = 0, round = 0, currentAudio = null, correctAnswers = [], selectedAnswers = new Set(), selectedCategory = null, requiredCategory = null, roundLocked = false, alreadyWrong = false, shuffledAudioQueue = [], currentAudioIndex = 0, exerciseIndex = 0;
 
-const gameImage = document.getElementById("gameImage");
-const imageWrapper = document.getElementById("imageWrapper");
-const gameAudio = document.getElementById("gameAudio");
+function shuffleArray(array) { const copy = [...array]; for (let i = copy.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; } return copy; }
+function getRandomItem(array) { return array[Math.floor(Math.random() * array.length)]; }
+function playSound(audio) { if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); } }
+function setMessage(el, text, type = "") { el.textContent = text; el.className = "message"; if (type) el.classList.add(type); }
+function showSection(id) { document.querySelectorAll(".level-section").forEach(s => s.classList.add("hidden")); $(id).classList.remove("hidden"); }
+function setHeader(title, intro, maxRounds) { levelTitle.textContent = title; levelIntro.textContent = intro; levelNumber.textContent = level; maxRoundsEl.textContent = maxRounds; roundEl.textContent = round; scoreEl.textContent = score; }
 
-const playAudioBtn = document.getElementById("playAudioBtn");
-const checkBtn = document.getElementById("checkBtn");
-const clearBtn = document.getElementById("clearBtn");
-const restartBtn = document.getElementById("restartBtn");
-
-const termGrid = document.getElementById("termGrid");
-
-const messageEl = document.getElementById("message");
-const selectedAnswersEl = document.getElementById("selectedAnswers");
-const selectedCategoryEl = document.getElementById("selectedCategory");
-const answerCountInfoEl = document.getElementById("answerCountInfo");
-const scoreEl = document.getElementById("score");
-const roundEl = document.getElementById("round");
-const maxRoundsEl = document.getElementById("maxRounds");
-const endScreen = document.getElementById("endScreen");
-const finalScoreEl = document.getElementById("finalScore");
-
-const successSound = document.getElementById("successSound");
-const errorSound = document.getElementById("errorSound");
-
-let currentImage = null;
-let currentAudio = null;
-let correctAnswers = [];
-let selectedAnswers = new Set();
-let selectedCategory = null;
-let requiredCategory = null;
-let score = 0;
-let round = 0;
-let roundLocked = false;
-let alreadyWrong = false;
-
-let shuffledAudioQueue = [];
-let currentAudioIndex = 0;
-
-maxRoundsEl.textContent = MAX_ROUNDS;
-
-function shuffleArray(array) {
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-function getRandomItem(array) {
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-function extractAnswersFromAudioPath(path) {
-  const fileName = path.split("/").pop().replace(".mp3", "").trim().toLowerCase();
-  return fileName.split(" en ").map(item => item.trim()).sort();
-}
-
-function getRequiredCategory(answers) {
-  const joined = [...answers].sort().join(",");
-
-  if (joined === "a") return "a";
-  if (joined === "b") return "b";
-  if (joined === "c") return "c";
-  if (joined === "d") return "d";
-  if (joined === "a,d") return "a,d";
-  if (joined === "b,c") return "b,c";
-
-  return null;
-}
-
-function arraysEqualAsSets(arr1, arr2) {
-  if (arr1.length !== arr2.length) return false;
-  return [...arr1].sort().join(",") === [...arr2].sort().join(",");
-}
-
-function clearHotspots() {
-  imageWrapper.querySelectorAll(".hotspot").forEach(el => el.remove());
-}
-
-function updateSelectedAnswersText() {
-  if (selectedAnswers.size === 0) {
-    selectedAnswersEl.textContent = "geen";
-    return;
-  }
-
-  selectedAnswersEl.textContent = [...selectedAnswers].sort().join(" en ");
-}
-
-function updateSelectedCategoryText() {
-  if (!selectedCategory) {
-    selectedCategoryEl.textContent = "geen";
-    return;
-  }
-
-  selectedCategoryEl.textContent = categoryLabels[selectedCategory] || "geen";
-}
-
-function setMessage(text, type = "") {
-  messageEl.textContent = text;
-  messageEl.className = "message";
-  if (type) {
-    messageEl.classList.add(type);
-  }
-}
-
+function extractAnswersFromAudioPath(path) { return path.split("/").pop().replace(".mp3", "").trim().toLowerCase().split(" en ").map(x => x.trim()).sort(); }
+function getRequiredCategory(answers) { const joined = [...answers].sort().join(","); return ["a", "b", "c", "d", "a,d", "b,c"].includes(joined) ? joined : null; }
+function arraysEqualAsSets(a, b) { return a.length === b.length && [...a].sort().join(",") === [...b].sort().join(","); }
+function buildNewAudioQueue() { shuffledAudioQueue = shuffleArray(audioFiles); currentAudioIndex = 0; }
+function getNextAudio() { if (currentAudioIndex >= shuffledAudioQueue.length) buildNewAudioQueue(); return shuffledAudioQueue[currentAudioIndex++]; }
+function clearHotspots() { imageWrapper.querySelectorAll(".hotspot").forEach(el => el.remove()); }
+function updateSelectedAnswersText() { selectedAnswersEl.textContent = selectedAnswers.size ? [...selectedAnswers].sort().join(" en ") : "geen"; }
+function updateSelectedCategoryText() { selectedCategoryEl.textContent = selectedCategory ? categoryLabels[selectedCategory] : "geen"; }
+function resetVisualState() { imageWrapper.querySelectorAll(".hotspot").forEach(h => h.classList.remove("selected", "correct", "wrong")); }
 function createHotspots() {
   clearHotspots();
-
-  const zones = [
-    { label: "a", left: 10, top: 10, width: 33, height: 36 },
-    { label: "c", left: 57, top: 10, width: 33, height: 36 },
-    { label: "b", left: 10, top: 54, width: 33, height: 34 },
-    { label: "d", left: 57, top: 54, width: 33, height: 34 }
-  ];
-
-  zones.forEach(zone => {
-    const hotspot = document.createElement("button");
-    hotspot.type = "button";
-    hotspot.className = "hotspot";
-    hotspot.dataset.label = zone.label;
-    hotspot.setAttribute("aria-label", `Kies ${zone.label}`);
-
-    hotspot.style.left = `${zone.left}%`;
-    hotspot.style.top = `${zone.top}%`;
-    hotspot.style.width = `${zone.width}%`;
-    hotspot.style.height = `${zone.height}%`;
-
-    hotspot.addEventListener("click", () => toggleAnswer(zone.label, hotspot));
-    imageWrapper.appendChild(hotspot);
+  [{ label: "a", left: 10, top: 10, width: 33, height: 36 }, { label: "c", left: 57, top: 10, width: 33, height: 36 }, { label: "b", left: 10, top: 54, width: 33, height: 34 }, { label: "d", left: 57, top: 54, width: 33, height: 34 }].forEach(zone => {
+    const h = document.createElement("button"); h.type = "button"; h.className = "hotspot"; h.dataset.label = zone.label;
+    Object.assign(h.style, { left: `${zone.left}%`, top: `${zone.top}%`, width: `${zone.width}%`, height: `${zone.height}%` });
+    h.addEventListener("click", () => { if (roundLocked) return; selectedAnswers.has(zone.label) ? selectedAnswers.delete(zone.label) : selectedAnswers.add(zone.label); h.classList.toggle("selected"); updateSelectedAnswersText(); setMessage(messageEl, ""); });
+    imageWrapper.appendChild(h);
   });
 }
-
-function renderCategoryButtons() {
-  termGrid.innerHTML = "";
-
-  categoryOptions.forEach(option => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "category-btn";
-    button.dataset.key = option.key;
-    button.textContent = option.label;
-
-    if (selectedCategory === option.key) {
-      button.classList.add("active");
-    }
-
-    button.addEventListener("click", () => selectCategory(option.key));
-    termGrid.appendChild(button);
-  });
-}
-
-function refreshCategoryButtonState() {
-  termGrid.querySelectorAll(".category-btn").forEach(button => {
-    button.classList.toggle("active", button.dataset.key === selectedCategory);
-  });
-}
-
-function toggleAnswer(label, hotspotEl) {
-  if (roundLocked) return;
-
-  setMessage("");
-
-  if (selectedAnswers.has(label)) {
-    selectedAnswers.delete(label);
-    hotspotEl.classList.remove("selected");
-  } else {
-    selectedAnswers.add(label);
-    hotspotEl.classList.add("selected");
-  }
-
-  updateSelectedAnswersText();
-}
-
-function resetVisualState() {
-  imageWrapper.querySelectorAll(".hotspot").forEach(h => {
-    h.classList.remove("selected", "correct", "wrong");
-  });
-}
-
-function clearCategorySelection() {
-  selectedCategory = null;
-  updateSelectedCategoryText();
-  refreshCategoryButtonState();
-}
-
-function selectCategory(category) {
-  if (roundLocked) return;
-
-  selectedCategory = category;
-  updateSelectedCategoryText();
-  refreshCategoryButtonState();
-  setMessage("");
-}
-
-function clearSelection() {
-  if (roundLocked) return;
-
-  selectedAnswers = new Set();
-  resetVisualState();
-  updateSelectedAnswersText();
-  clearCategorySelection();
-  setMessage("");
-}
-
-function showCorrectState() {
-  imageWrapper.querySelectorAll(".hotspot").forEach(h => {
-    const label = h.dataset.label;
-    const isActuallyCorrect = correctAnswers.includes(label);
-
-    h.classList.remove("selected", "wrong");
-
-    if (isActuallyCorrect) {
-      h.classList.add("correct");
-    }
-  });
-
-  refreshCategoryButtonState();
-}
-
-function playSound(audioElement) {
-  if (!audioElement) return;
-  audioElement.currentTime = 0;
-  audioElement.play().catch(() => {});
-}
-
-function playCurrentAudio() {
-  if (!currentAudio) return;
-
-  gameAudio.currentTime = 0;
-  gameAudio.play().catch(() => {
-    setMessage("Het audiofragment kon niet starten. Klik nog eens op de knop.", "error");
-  });
-}
-
-function updateInstructionText() {
-  answerCountInfoEl.textContent = "Luister goed en kies het juiste antwoord.";
-}
-
-function buildNewAudioQueue() {
-  shuffledAudioQueue = shuffleArray(audioFiles);
-  currentAudioIndex = 0;
-}
-
-function getNextAudio() {
-  if (currentAudioIndex >= shuffledAudioQueue.length) {
-    shuffledAudioQueue = shuffleArray(audioFiles);
-    currentAudioIndex = 0;
-  }
-
-  const nextAudio = shuffledAudioQueue[currentAudioIndex];
-  currentAudioIndex += 1;
-  return nextAudio;
-}
-
-function lockRound() {
-  roundLocked = true;
-}
-
-function unlockRound() {
-  roundLocked = false;
-}
-
-function endGame() {
-  finalScoreEl.textContent = score;
-  endScreen.classList.remove("hidden");
-}
-
+function renderCategoryButtons() { termGrid.innerHTML = ""; categoryOptions.forEach(o => { const b = document.createElement("button"); b.className = "category-btn"; b.textContent = o.label; b.onclick = () => { if (roundLocked) return; selectedCategory = o.key; updateSelectedCategoryText(); renderCategoryButtons(); }; if (selectedCategory === o.key) b.classList.add("active"); termGrid.appendChild(b); }); }
+function startLevel1() { level = 1; round = 0; buildNewAudioQueue(); setHeader("Benamingen evenredigheden", "Luister naar het audiofragment en maak de juiste keuze tussen a, b, c of d. Kies nadien ook de juiste benaming.", LEVEL1_ROUNDS); showSection("level1"); startNewRound(); }
 function startNewRound() {
-  if (round >= MAX_ROUNDS) {
-    endGame();
-    return;
-  }
-
-  unlockRound();
-  selectedAnswers = new Set();
-  correctAnswers = [];
-  requiredCategory = null;
-  selectedCategory = null;
-  alreadyWrong = false;
-
-  updateSelectedAnswersText();
-  updateSelectedCategoryText();
-  resetVisualState();
-  setMessage("");
-
-  currentImage = getRandomItem(images);
-  currentAudio = getNextAudio();
-
-  correctAnswers = extractAnswersFromAudioPath(currentAudio);
-  requiredCategory = getRequiredCategory(correctAnswers);
-
-  gameImage.src = currentImage.file;
-  gameAudio.src = currentAudio;
-
-  createHotspots();
-  renderCategoryButtons();
-  updateInstructionText();
-  gameAudio.load();
-
-  round += 1;
-  roundEl.textContent = round;
+  if (round >= LEVEL1_ROUNDS) return startLevel2();
+  selectedAnswers = new Set(); selectedCategory = null; alreadyWrong = false; roundLocked = false; updateSelectedAnswersText(); updateSelectedCategoryText(); resetVisualState(); setMessage(messageEl, "");
+  gameImage.src = getRandomItem(images).file; currentAudio = getNextAudio(); correctAnswers = extractAnswersFromAudioPath(currentAudio); requiredCategory = getRequiredCategory(correctAnswers); gameAudio.src = currentAudio; gameAudio.load(); createHotspots(); renderCategoryButtons(); round++; setHeader("Benamingen evenredigheden", levelIntro.textContent, LEVEL1_ROUNDS);
 }
+function checkAnswer() { if (roundLocked) return; if (!selectedAnswers.size) return setMessage(messageEl, "Klik eerst minstens één vak aan.", "error"); if (!selectedCategory) return setMessage(messageEl, "Kies ook de juiste termknop.", "error"); const ok = arraysEqualAsSets([...selectedAnswers], correctAnswers) && selectedCategory === requiredCategory; if (ok) { roundLocked = true; if (!alreadyWrong) score++; scoreEl.textContent = score; playSound(successSound); setMessage(messageEl, "Goed! Volgende ronde...", "success"); setTimeout(startNewRound, 1000); } else { alreadyWrong = true; playSound(errorSound); setMessage(messageEl, "Niet juist, probeer opnieuw!", "error"); } }
+function clearSelection() { if (roundLocked) return; selectedAnswers = new Set(); selectedCategory = null; resetVisualState(); updateSelectedAnswersText(); updateSelectedCategoryText(); renderCategoryButtons(); setMessage(messageEl, ""); }
 
-function checkAnswer() {
-  if (roundLocked) return;
+function startLevel2() { level = 2; round = 1; setHeader("Hoofdeigenschap evenredigheden", "Vind de correcte definitie.", 1); showSection("level2"); const grid = $("definitionGrid"); grid.innerHTML = ""; shuffleArray(["juist.jpg", "fout1.jpg", "fout2.jpg", "fout3.jpg"]).forEach(file => { const btn = document.createElement("button"); btn.className = "definition-card"; btn.innerHTML = `<img src="images/${file}" alt="definitie">`; btn.onclick = () => { if (file === "juist.jpg") { score++; scoreEl.textContent = score; playSound(successSound); setMessage($("level2Message"), "Goed! Je gaat naar level 3.", "success"); setTimeout(startLevel3, 1000); } else { playSound(errorSound); setMessage($("level2Message"), "Niet juist, probeer opnieuw.", "error"); } }; grid.appendChild(btn); }); }
 
-  if (selectedAnswers.size === 0) {
-    setMessage("Klik eerst minstens één vak aan.", "error");
-    return;
-  }
+function startLevel3() { level = 3; round = 1; exerciseIndex = 0; setHeader("Oefeningen evenredigheden", "Vul de ontbrekende blauwe antwoorden in.", level3Exercises.length); showSection("level3"); renderExercise(); }
+function renderExercise() { const ex = level3Exercises[exerciseIndex]; round = exerciseIndex + 1; setHeader("Oefeningen evenredigheden", levelIntro.textContent, level3Exercises.length); $("nextExerciseBtn").classList.add("hidden"); setMessage($("level3Message"), ""); $("exerciseBox").innerHTML = `<div class="exercise-question">${ex.question}</div>` + ex.answers.map((_, i) => `<input class="exercise-input" aria-label="antwoord ${i + 1}" />`).join(""); }
+function normalize(v) { return v.trim().replace(/\s/g, "").replace(",", "."); }
+function answerOk(user, correct) { const u = normalize(user), c = normalize(correct); if (u === c) return true; const uf = Number(u.replace("/", "/")), cf = Number(c.replace("/", "/")); if (!u.includes("/") && !c.includes("/")) return Math.abs(Number(u) - Number(c)) < 0.0001; return false; }
+function checkExercise() { const ex = level3Exercises[exerciseIndex]; const inputs = [...document.querySelectorAll(".exercise-input")]; const ok = inputs.every((inp, i) => answerOk(inp.value, ex.answers[i])); if (ok) { score++; scoreEl.textContent = score; playSound(successSound); setMessage($("level3Message"), "Goed!", "success"); $("nextExerciseBtn").classList.remove("hidden"); } else { playSound(errorSound); setMessage($("level3Message"), "Niet juist, probeer opnieuw.", "error"); } }
+function nextExercise() { exerciseIndex++; if (exerciseIndex >= level3Exercises.length) return finishGame(); renderExercise(); }
+function finishGame() { finalScoreEl.textContent = `${score} op ${LEVEL1_ROUNDS + 1 + level3Exercises.length}`; endScreen.classList.remove("hidden"); }
+function restartGame() { score = 0; startScreen.classList.remove("hidden"); gameScreen.classList.add("hidden"); endScreen.classList.add("hidden"); }
 
-  if (!selectedCategory) {
-    setMessage("Kies ook de juiste termknop.", "error");
-    return;
-  }
-
-  const userAnswers = [...selectedAnswers].sort();
-  const isCorrect = arraysEqualAsSets(userAnswers, correctAnswers);
-  const isCategoryCorrect = selectedCategory === requiredCategory;
-
-  if (isCorrect && isCategoryCorrect) {
-    lockRound();
-
-    if (!alreadyWrong) {
-      score += 1;
-      scoreEl.textContent = score;
-    }
-
-    showCorrectState();
-    playSound(successSound);
-    setMessage("Goed! Volgende ronde...", "success");
-
-    setTimeout(() => {
-      if (round >= MAX_ROUNDS) {
-        endGame();
-      } else {
-        startNewRound();
-      }
-    }, 1200);
-
-    return;
-  }
-
-  alreadyWrong = true;
-  playSound(errorSound);
-  setMessage("Niet juist, probeer opnieuw!", "error");
-}
-
-function restartGame() {
-  score = 0;
-  round = 0;
-  selectedAnswers = new Set();
-  correctAnswers = [];
-  currentImage = null;
-  currentAudio = null;
-  selectedCategory = null;
-  requiredCategory = null;
-  roundLocked = false;
-  alreadyWrong = false;
-
-  buildNewAudioQueue();
-
-  scoreEl.textContent = "0";
-  roundEl.textContent = "0";
-  finalScoreEl.textContent = "0";
-  endScreen.classList.add("hidden");
-
-  startNewRound();
-}
-
-playAudioBtn.addEventListener("click", playCurrentAudio);
-checkBtn.addEventListener("click", checkAnswer);
-clearBtn.addEventListener("click", clearSelection);
-restartBtn.addEventListener("click", restartGame);
-
+$("startGameBtn").onclick = () => { startScreen.classList.add("hidden"); gameScreen.classList.remove("hidden"); startLevel1(); };
+$("playAudioBtn").onclick = () => gameAudio.play().catch(() => setMessage(messageEl, "Klik nog eens op de knop.", "error"));
+$("checkBtn").onclick = checkAnswer; $("clearBtn").onclick = clearSelection; $("checkExerciseBtn").onclick = checkExercise; $("nextExerciseBtn").onclick = nextExercise; $("restartBtn").onclick = restartGame;
 restartGame();
