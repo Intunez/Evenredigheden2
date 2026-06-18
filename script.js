@@ -97,6 +97,7 @@ let currentAudioIndex = 0;
 let exerciseIndex = 0;
 let level2Done = false;
 let level3AnsweredCorrectly = false;
+let level3WrongAttempts = 0;
 
 function shuffleArray(array) {
     const copy = [...array];
@@ -440,25 +441,17 @@ function makeFraction(text) {
 }
 
 function formatExerciseQuestion(question) {
-    return question.replace(
-        /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
-        (_, teller, noemer) => `
-            <span class="fraction">
-                <span class="top">${teller}</span>
-                <span class="bottom">${noemer}</span>
-            </span>
-        `
-    ).replace(/=/g, '<span class="equals"> = </span>');
-}
-    const parts = question.split("=");
-
-    const formattedParts = parts.map(part => {
-        return part.trim().replace(/(-?…|-?\d*x?|-?x)\/(-?…|-?\d*x?|-?x)/g, match => {
-            return makeFraction(match);
-        });
-    });
-
-    return formattedParts.join(`<span class="equals"> = </span>`);
+    return question
+        .replace(
+            /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
+            (_, teller, noemer) => `
+                <span class="fraction">
+                    <span class="top">${teller}</span>
+                    <span class="bottom">${noemer}</span>
+                </span>
+            `
+        )
+        .replace(/=/g, '<span class="equals"> = </span>');
 }
 
 function showLevel3() {
@@ -487,6 +480,7 @@ function renderExercise() {
 
     round = exerciseIndex + 1;
     level3AnsweredCorrectly = false;
+    level3WrongAttempts = 0;
 
     setHeader(
         "Oefeningen evenredigheden",
@@ -570,8 +564,31 @@ function checkExercise() {
         setMessage($("level3Message"), "Goed!", "success");
         $("nextExerciseBtn").classList.remove("hidden");
     } else {
+        level3WrongAttempts++;
         playSound(errorSound);
-        setMessage($("level3Message"), "Niet juist, probeer opnieuw.", "error");
+
+        if (level3WrongAttempts >= 4) {
+            const correctText = ex.answers.join(" en ");
+
+            inputs.forEach((input, i) => {
+                input.value = ex.answers[i];
+                input.disabled = true;
+            });
+
+            setMessage(
+                $("level3Message"),
+                `Niet erg! Het juiste antwoord is: ${correctText}`,
+                "error"
+            );
+
+            $("nextExerciseBtn").classList.remove("hidden");
+        } else {
+            setMessage(
+                $("level3Message"),
+                `Niet juist, probeer opnieuw. Poging ${level3WrongAttempts}/4`,
+                "error"
+            );
+        }
     }
 }
 
