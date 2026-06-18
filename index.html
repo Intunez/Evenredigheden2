@@ -8,11 +8,25 @@
 </head>
 <body>
   <main class="game-shell">
+
     <section id="startScreen" class="start-screen">
-      <img src="images/startscherm.jpg" alt="Startscherm evenredigheden" class="start-image" />
+      <img src="images/start1.jpg" alt="Start level 1" class="start-image" />
       <div class="start-overlay">
-        <h1>EVENREDIGHEDEN</h1>
-        <button id="startGameBtn" class="start-btn">Start spel</button>
+        <button id="startGameBtn" class="start-btn">Start level 1</button>
+      </div>
+    </section>
+
+    <section id="level2StartScreen" class="start-screen hidden">
+      <img src="images/start2.jpg" alt="Start level 2" class="start-image" />
+      <div class="start-overlay">
+        <button id="startLevel2Btn" class="start-btn">Start level 2</button>
+      </div>
+    </section>
+
+    <section id="level3StartScreen" class="start-screen hidden">
+      <img src="images/start3.jpg" alt="Start level 3" class="start-image" />
+      <div class="start-overlay">
+        <button id="startLevel3Btn" class="start-btn">Start level 3</button>
       </div>
     </section>
 
@@ -44,14 +58,17 @@
           <h2 class="panel-title">Luister en kies de juiste term</h2>
           <button id="playAudioBtn" class="play-audio-btn">▶ Speel audio af</button>
           <audio id="gameAudio"></audio>
+
           <div class="button-row">
             <button id="checkBtn" class="action-btn success">✅ Controleer</button>
             <button id="clearBtn" class="action-btn secondary">Wis keuze</button>
           </div>
+
           <div class="instruction-box">
             <p id="answerCountInfo">Luister goed en kies het juiste antwoord.</p>
             <p>Gekozen termknop: <strong id="selectedCategory">geen</strong></p>
           </div>
+
           <div id="termGrid" class="term-grid"></div>
           <div class="feedback-box"><p id="message" class="message"></p></div>
         </div>
@@ -68,10 +85,12 @@
         <h2 class="panel-title">Oefeningen evenredigheden</h2>
         <p class="center-text">Vul de blauwe antwoorden in. Gebruik een punt of komma voor kommagetallen.</p>
         <div id="exerciseBox" class="exercise-box"></div>
+
         <div class="button-row level3-buttons">
           <button id="checkExerciseBtn" class="action-btn success">✅ Controleer</button>
           <button id="nextExerciseBtn" class="action-btn secondary hidden">Volgende oefening</button>
         </div>
+
         <p id="level3Message" class="message"></p>
       </section>
     </section>
@@ -87,6 +106,7 @@
 
   <audio id="successSound" src="audio/juist.mp3"></audio>
   <audio id="errorSound" src="audio/fout.mp3"></audio>
+
   <script src="script.js"></script>
 </body>
 </html>
