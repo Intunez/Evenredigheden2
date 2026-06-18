@@ -1,3 +1,4 @@
+alert("NIEUWE SCRIPT WORDT GELADEN");
 const LEVEL1_ROUNDS = 10;
 
 const level3Exercises = [
