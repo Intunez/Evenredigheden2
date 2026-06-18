@@ -428,7 +428,9 @@ function formatExerciseQuestion(question) {
             }
         )
         .replace(/=/g, '<span class="equals"> = </span>');
-}function showLevel3() {
+}
+
+function showLevel3() {
     level3StartScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
     startLevel3();
