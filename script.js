@@ -97,6 +97,7 @@ let currentAudioIndex = 0;
 let exerciseIndex = 0;
 let level2Done = false;
 let level3AnsweredCorrectly = false;
+let level3WrongAttempts = 0;
 
 function shuffleArray(array) {
     const copy = [...array];
@@ -115,7 +116,6 @@ function getRandomItem(array) {
 
 function playSound(audio) {
     if (!audio) return;
-
     audio.currentTime = 0;
     audio.play().catch(() => {});
 }
@@ -123,10 +123,7 @@ function playSound(audio) {
 function setMessage(el, text, type = "") {
     el.textContent = text;
     el.className = "message";
-
-    if (type) {
-        el.classList.add(type);
-    }
+    if (type) el.classList.add(type);
 }
 
 function showSection(id) {
@@ -160,12 +157,7 @@ function extractAnswersFromAudioPath(path) {
 
 function getRequiredCategory(answers) {
     const joined = [...answers].sort().join(",");
-
-    if (["a", "b", "c", "d", "a,d", "b,c"].includes(joined)) {
-        return joined;
-    }
-
-    return null;
+    return ["a", "b", "c", "d", "a,d", "b,c"].includes(joined) ? joined : null;
 }
 
 function arraysEqualAsSets(a, b) {
@@ -352,7 +344,6 @@ function checkAnswer() {
 
         playSound(successSound);
         setMessage(messageEl, "Goed! Volgende ronde...", "success");
-
         setTimeout(startNewRound, 1000);
     } else {
         alreadyWrong = true;
@@ -428,37 +419,15 @@ function startLevel2() {
     });
 }
 
-function makeFraction(text) {
-    const parts = text.split("/");
-
-    return `
-        <span class="fraction">
-            <span class="top">${parts[0]}</span>
-            <span class="bottom">${parts[1]}</span>
-        </span>
-    `;
-}
-
 function formatExerciseQuestion(question) {
-    return question.replace(
-        /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
-        (_, teller, noemer) => `
-            <span class="fraction">
-                <span class="top">${teller}</span>
-                <span class="bottom">${noemer}</span>
-            </span>
-        `
-    ).replace(/=/g, '<span class="equals"> = </span>');
-}
-    const parts = question.split("=");
-
-    const formattedParts = parts.map(part => {
-        return part.trim().replace(/(-?…|-?\d*x?|-?x)\/(-?…|-?\d*x?|-?x)/g, match => {
-            return makeFraction(match);
-        });
-    });
-
-    return formattedParts.join(`<span class="equals"> = </span>`);
+    return question
+        .replace(
+            /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
+            function(match, teller, noemer) {
+                return '<span class="fraction"><span class="top">' + teller + '</span><span class="bottom">' + noemer + '</span></span>';
+            }
+        )
+        .replace(/=/g, '<span class="equals"> = </span>');
 }
 
 function showLevel3() {
@@ -487,6 +456,7 @@ function renderExercise() {
 
     round = exerciseIndex + 1;
     level3AnsweredCorrectly = false;
+    level3WrongAttempts = 0;
 
     setHeader(
         "Oefeningen evenredigheden",
@@ -570,8 +540,31 @@ function checkExercise() {
         setMessage($("level3Message"), "Goed!", "success");
         $("nextExerciseBtn").classList.remove("hidden");
     } else {
+        level3WrongAttempts++;
         playSound(errorSound);
-        setMessage($("level3Message"), "Niet juist, probeer opnieuw.", "error");
+
+        if (level3WrongAttempts >= 4) {
+            const correctText = ex.answers.join(" en ");
+
+            inputs.forEach((input, i) => {
+                input.value = ex.answers[i];
+                input.disabled = true;
+            });
+
+            setMessage(
+                $("level3Message"),
+                `Niet erg! Het juiste antwoord is: ${correctText}`,
+                "error"
+            );
+
+            $("nextExerciseBtn").classList.remove("hidden");
+        } else {
+            setMessage(
+                $("level3Message"),
+                `Niet juist, probeer opnieuw. Poging ${level3WrongAttempts}/4`,
+                "error"
+            );
+        }
     }
 }
 
