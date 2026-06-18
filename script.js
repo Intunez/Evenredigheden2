@@ -101,12 +101,10 @@ let level3WrongAttempts = 0;
 
 function shuffleArray(array) {
     const copy = [...array];
-
     for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
     }
-
     return copy;
 }
 
@@ -116,7 +114,6 @@ function getRandomItem(array) {
 
 function playSound(audio) {
     if (!audio) return;
-
     audio.currentTime = 0;
     audio.play().catch(() => {});
 }
@@ -124,17 +121,13 @@ function playSound(audio) {
 function setMessage(el, text, type = "") {
     el.textContent = text;
     el.className = "message";
-
-    if (type) {
-        el.classList.add(type);
-    }
+    if (type) el.classList.add(type);
 }
 
 function showSection(id) {
     document.querySelectorAll(".level-section").forEach(section => {
         section.classList.add("hidden");
     });
-
     $(id).classList.remove("hidden");
 }
 
@@ -161,12 +154,7 @@ function extractAnswersFromAudioPath(path) {
 
 function getRequiredCategory(answers) {
     const joined = [...answers].sort().join(",");
-
-    if (["a", "b", "c", "d", "a,d", "b,c"].includes(joined)) {
-        return joined;
-    }
-
-    return null;
+    return ["a", "b", "c", "d", "a,d", "b,c"].includes(joined) ? joined : null;
 }
 
 function arraysEqualAsSets(a, b) {
@@ -182,7 +170,6 @@ function getNextAudio() {
     if (currentAudioIndex >= shuffledAudioQueue.length) {
         buildNewAudioQueue();
     }
-
     return shuffledAudioQueue[currentAudioIndex++];
 }
 
@@ -220,7 +207,6 @@ function createHotspots() {
 
     zones.forEach(zone => {
         const h = document.createElement("button");
-
         h.type = "button";
         h.className = "hotspot";
         h.dataset.label = zone.label;
@@ -255,13 +241,11 @@ function renderCategoryButtons() {
 
     categoryOptions.forEach(option => {
         const button = document.createElement("button");
-
         button.className = "category-btn";
         button.textContent = option.label;
 
         button.onclick = () => {
             if (roundLocked) return;
-
             selectedCategory = option.key;
             updateSelectedCategoryText();
             renderCategoryButtons();
@@ -353,7 +337,6 @@ function checkAnswer() {
 
         playSound(successSound);
         setMessage(messageEl, "Goed! Volgende ronde...", "success");
-
         setTimeout(startNewRound, 1000);
     } else {
         alreadyWrong = true;
@@ -400,7 +383,6 @@ function startLevel2() {
 
     shuffleArray(["juist.jpg", "fout1.jpg", "fout2.jpg", "fout3.jpg"]).forEach(file => {
         const btn = document.createElement("button");
-
         btn.className = "definition-card";
         btn.innerHTML = `<img src="images/${file}" alt="definitie">`;
 
@@ -429,17 +411,6 @@ function startLevel2() {
     });
 }
 
-function makeFraction(text) {
-    const parts = text.split("/");
-
-    return `
-        <span class="fraction">
-            <span class="top">${parts[0]}</span>
-            <span class="bottom">${parts[1]}</span>
-        </span>
-    `;
-}
-
 function formatExerciseQuestion(question) {
     return question
         .replace(
@@ -447,18 +418,6 @@ function formatExerciseQuestion(question) {
             function(match, teller, noemer) {
                 return '<span class="fraction"><span class="top">' + teller + '</span><span class="bottom">' + noemer + '</span></span>';
             }
-        )
-        .replace(/=/g, '<span class="equals"> = </span>');
-}
-    return question
-        .replace(
-            /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
-            (_, teller, noemer) => `
-                <span class="fraction">
-                    <span class="top">${teller}</span>
-                    <span class="bottom">${noemer}</span>
-                </span>
-            `
         )
         .replace(/=/g, '<span class="equals"> = </span>');
 }
