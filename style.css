@@ -425,4 +425,26 @@ body {
     .panel {
         padding: 10px;
     }
+    .fraction {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 8px;
+    font-weight: bold;
+}
+
+.fraction .top {
+    border-bottom: 2px solid #111827;
+    padding: 0 8px 2px;
+}
+
+.fraction .bottom {
+    padding-top: 2px;
+}
+
+.equals {
+    display: inline-block;
+    margin: 0 10px;
+}
 }
