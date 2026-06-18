@@ -56,6 +56,8 @@ const categoryLabels = {
 const $ = id => document.getElementById(id);
 
 const startScreen = $("startScreen");
+const level2StartScreen = $("level2StartScreen");
+const level3StartScreen = $("level3StartScreen");
 const gameScreen = $("gameScreen");
 const endScreen = $("endScreen");
 
@@ -289,7 +291,9 @@ function startLevel1() {
 
 function startNewRound() {
     if (round >= LEVEL1_ROUNDS) {
-        return startLevel2();
+        gameScreen.classList.add("hidden");
+        level2StartScreen.classList.remove("hidden");
+        return;
     }
 
     selectedAnswers = new Set();
@@ -370,6 +374,12 @@ function clearSelection() {
     setMessage(messageEl, "");
 }
 
+function showLevel2() {
+    level2StartScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+    startLevel2();
+}
+
 function startLevel2() {
     level = 2;
     round = 1;
@@ -404,7 +414,10 @@ function startLevel2() {
                 playSound(successSound);
                 setMessage($("level2Message"), "Goed! Je gaat naar level 3.", "success");
 
-                setTimeout(startLevel3, 1000);
+                setTimeout(() => {
+                    gameScreen.classList.add("hidden");
+                    level3StartScreen.classList.remove("hidden");
+                }, 1000);
             } else {
                 playSound(errorSound);
                 setMessage($("level2Message"), "Niet juist, probeer opnieuw.", "error");
@@ -428,6 +441,7 @@ function makeFraction(text) {
 
 function formatExerciseQuestion(question) {
     const parts = question.split("=");
+
     const formattedParts = parts.map(part => {
         return part.trim().replace(/(-?…|-?\d*x?|-?x)\/(-?…|-?\d*x?|-?x)/g, match => {
             return makeFraction(match);
@@ -435,6 +449,12 @@ function formatExerciseQuestion(question) {
     });
 
     return formattedParts.join(`<span class="equals"> = </span>`);
+}
+
+function showLevel3() {
+    level3StartScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+    startLevel3();
 }
 
 function startLevel3() {
@@ -564,6 +584,9 @@ function restartGame() {
     score = 0;
 
     startScreen.classList.remove("hidden");
+    level2StartScreen.classList.add("hidden");
+    level3StartScreen.classList.add("hidden");
+
     gameScreen.classList.add("hidden");
     endScreen.classList.add("hidden");
 }
@@ -573,6 +596,9 @@ $("startGameBtn").onclick = () => {
     gameScreen.classList.remove("hidden");
     startLevel1();
 };
+
+$("startLevel2Btn").onclick = showLevel2;
+$("startLevel3Btn").onclick = showLevel3;
 
 $("playAudioBtn").onclick = () => {
     gameAudio.play().catch(() => {
