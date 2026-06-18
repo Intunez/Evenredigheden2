@@ -440,6 +440,16 @@ function makeFraction(text) {
 }
 
 function formatExerciseQuestion(question) {
+    return question.replace(
+        /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
+        (_, teller, noemer) => `
+            <span class="fraction">
+                <span class="top">${teller}</span>
+                <span class="bottom">${noemer}</span>
+            </span>
+        `
+    ).replace(/=/g, '<span class="equals"> = </span>');
+}
     const parts = question.split("=");
 
     const formattedParts = parts.map(part => {
