@@ -420,17 +420,16 @@ function startLevel2() {
 }
 
 function formatExerciseQuestion(question) {
-    return question
-        .replace(
+    const parts = question.split("=");
+
+    return parts.map(part => {
+        return part.trim().replace(
             /([\-0-9a-zA-Z…]+)\/([\-0-9a-zA-Z…]+)/g,
             '<span class="fraction"><span class="top">$1</span><span class="bottom">$2</span></span>'
-        )
-        .replace(
-            /=/g,
-            '<span class="equals"> = </span>'
         );
-}
-function showLevel3() {
+    }).join('<span class="equals"> = </span>');
+    
+}function showLevel3() {
     level3StartScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
     startLevel3();
